@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        APP_NAME = "notes-app"
+        APP_NAME = "vin-notes-app"
         AWS_REGION = "us-east-1"
         ECR_URL = "921483785411.dkr.ecr.us-east-1.amazonaws.com"
         FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}"
