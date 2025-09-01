@@ -70,21 +70,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Destroy (Cleanup Old Infra)') {
-            steps {
-                dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-ecr'
-                    ]]) {
-                        sh '''
-                            terraform init
-                            terraform destroy -auto-approve || true
-                        '''
-                    }
-                }
-            }
-        }
+       
 
         stage('Terraform Apply (Deploy New Infra)') {
             steps {
