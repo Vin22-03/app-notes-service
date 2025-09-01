@@ -5,4 +5,4 @@ global:
 scrape_configs:
   - job_name: 'ecs-flask-app'
     static_configs:
-      - targets: ['notes-alb-v3-1286106134.us-east-1.elb.amazonaws.com']
+      - targets: ['notes-alb-v3-1286106134.us-east-1.elb.amazonaws.com:80']
