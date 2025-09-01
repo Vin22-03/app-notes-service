@@ -1,0 +1,8 @@
+# prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'ecs-flask-app'
+    static_configs:
+      - targets: ['notes-alb-v3-1286106134.us-east-1.elb.amazonaws.com']
