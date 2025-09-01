@@ -1,17 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.10-slim'
+        }
+    }
 
     environment {
         PYTHONPATH = '.'
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/Vin22-03/app-notes-service.git', branch: 'main'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh '''
