@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.10-slim'
-            args '-u root:root' // run as root to allow pip installs
+            image 'docker:24.0.2-dind'
+            args '--privileged' // run as root to allow pip installs
         }
     }
 
@@ -13,8 +13,11 @@ pipeline {
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'pip install --upgrade pip'
-                sh 'pip install -r requirements.txt'
+                sh '''
+                apk add --no-cache python3 py3-pip
+                python3 -m ensurepip
+                sh 'pip3 install --upgrade pip'
+                sh 'pip3 install -r requirements.txt'
             }
         }
 
@@ -23,6 +26,12 @@ pipeline {
                 sh 'PYTHONPATH=. pytest -q'
             }
         }
+
+        stage('Check Docker') {
+    steps {
+        sh 'docker --version'
+    }
+}
 
         stage('Build Docker Image') {
             steps {
