@@ -17,9 +17,17 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    apt-get update && apt-get install -y awscli docker.io
+                    apt-get update && apt-get install -y awscli docker.io unzip wget
                     pip install --upgrade pip
                     pip install -r requirements.txt
+                '''
+                
+                // Install Terraform
+                sh '''
+                    wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
+                    unzip terraform_1.6.6_linux_amd64.zip
+                    mv terraform /usr/local/bin/
+                    terraform -version
                 '''
             }
         }
@@ -58,6 +66,31 @@ pipeline {
                     '''
                 }
             }
+        }
+
+        stage('Terraform Deploy to ECS') {
+            steps {
+                dir('terraform') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-ecr'  // same credentials used for Terraform AWS auth
+                    ]]) {
+                        sh '''
+                            terraform init
+                            terraform apply -auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ CI/CD pipeline with Terraform deployment completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check error logs.'
         }
     }
 }
