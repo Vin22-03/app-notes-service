@@ -21,14 +21,15 @@ pipeline {
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
-                
-                // Install Terraform
-                sh '''
-                    wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
-                    unzip -o /tmp/terraform.zip -d /usr/local/bin/
-                    chmod +x /usr/local/bin/terraform
-                    terraform -version
 
+                // Install Terraform only if not present
+                sh '''
+                    if ! command -v terraform >/dev/null; then
+                        wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
+                        unzip -o /tmp/terraform.zip -d /usr/local/bin/
+                        chmod +x /usr/local/bin/terraform
+                    fi
+                    terraform -version
                 '''
             }
         }
@@ -55,7 +56,7 @@ pipeline {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-ecr'  // 🔁 replace with your Jenkins credentialsId
+                    credentialsId: 'aws-ecr'
                 ]]) {
                     sh '''
                         aws --version
@@ -69,12 +70,28 @@ pipeline {
             }
         }
 
-        stage('Terraform Deploy to ECS') {
+        stage('Terraform Destroy (Cleanup Old Infra)') {
             steps {
                 dir('terraform') {
                     withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-ecr'  // same credentials used for Terraform AWS auth
+                        credentialsId: 'aws-ecr'
+                    ]]) {
+                        sh '''
+                            terraform init
+                            terraform destroy -auto-approve || true
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply (Deploy New Infra)') {
+            steps {
+                dir('terraform') {
+                    withCredentials([[ 
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-ecr'
                     ]]) {
                         sh '''
                             terraform init
@@ -88,10 +105,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI/CD pipeline with Terraform deployment completed successfully!'
+            echo '✅ CI/CD pipeline with Terraform destroy & deploy completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check error logs.'
+            echo '❌ Pipeline failed. Check logs and fix errors.'
         }
     }
 }
