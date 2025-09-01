@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "notes_service" {
-  name            = "notes-service"
+  name            = "notes-service-v3"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.notes_app_task.arn
   launch_type     = "FARGATE"
