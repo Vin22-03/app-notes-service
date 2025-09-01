@@ -24,10 +24,11 @@ pipeline {
                 
                 // Install Terraform
                 sh '''
-                    wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
-                    unzip -o terraform_1.6.6_linux_amd64.zip
-                    mv terraform /usr/local/bin/
+                    wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
+                    unzip -o /tmp/terraform.zip -d /usr/local/bin/
+                    chmod +x /usr/local/bin/terraform
                     terraform -version
+
                 '''
             }
         }
