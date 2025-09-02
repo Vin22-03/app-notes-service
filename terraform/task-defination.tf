@@ -31,3 +31,8 @@ resource "aws_ecs_task_definition" "notes_app_task" {
     }
   ])
 }
+ # ✅ Force ECS to replace task definition each time
+  lifecycle {
+    create_before_destroy = true
+  }
+}
