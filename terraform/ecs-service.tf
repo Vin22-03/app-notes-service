@@ -17,5 +17,7 @@ resource "aws_ecs_service" "notes_service" {
     container_port   = 8000
   }
 
+  force_new_deployment = true
+
   depends_on = [aws_lb_listener.notes_listener]
 }
