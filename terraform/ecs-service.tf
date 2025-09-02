@@ -13,7 +13,7 @@ resource "aws_ecs_service" "notes_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.notes_tg.arn
-    container_name   = "notes-app"
+    container_name   = "notes-app-v3"
     container_port   = 8000
   }
 
