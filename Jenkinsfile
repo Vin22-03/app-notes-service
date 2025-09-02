@@ -10,7 +10,7 @@ pipeline {
         APP_NAME = "vin-notes-app"
         AWS_REGION = "us-east-1"
         ECR_URL = "921483785411.dkr.ecr.us-east-1.amazonaws.com"
-        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}"
+        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:latest"
     }
 
     stages {
@@ -22,7 +22,6 @@ pipeline {
                     pip install -r requirements.txt
                 '''
 
-                // Install Terraform only if not present
                 sh '''
                     if ! command -v terraform >/dev/null; then
                         wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
@@ -48,7 +47,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build --no-cache -t $APP_NAME .'
+                sh 'docker build --no-cache --build-arg CACHEBUST=$(date +%s) -t $APP_NAME .'
+                sh 'docker tag $APP_NAME $FULL_IMAGE_NAME'
             }
         }
 
@@ -63,19 +63,16 @@ pipeline {
                         aws ecr get-login-password --region $AWS_REGION | \
                         docker login --username AWS --password-stdin $ECR_URL
 
-                        docker tag $APP_NAME $FULL_IMAGE_NAME
                         docker push $FULL_IMAGE_NAME
                     '''
                 }
             }
         }
 
-       
-
-        stage('Terraform Apply (Deploy New Infra)') {
+        stage('Terraform Apply (Deploy Infra)') {
             steps {
                 dir('terraform') {
-                    withCredentials([[ 
+                    withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'aws-ecr'
                     ]]) {
@@ -87,11 +84,29 @@ pipeline {
                 }
             }
         }
+
+        // 🚀 NEW STAGE: Trigger ECS to pick latest image
+        stage('Update ECS Service') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-ecr'
+                ]]) {
+                    sh '''
+                        aws ecs update-service \
+                          --cluster notes-app-cluster  \
+                          --service notes-service-v3 \
+                          --force-new-deployment \
+                          --region $AWS_REGION
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ CI/CD pipeline with Terraform destroy & deploy completed successfully!'
+            echo '✅ CI/CD pipeline with ECS update completed successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs and fix errors.'

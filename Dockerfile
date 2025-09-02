@@ -2,6 +2,7 @@
 FROM python:3.10-slim
 
 # Set working directory inside container
+ARG CACHEBUST=1
 WORKDIR /app
 
 # Copy requirements and install dependencies
@@ -9,7 +10,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy entire src folder to /app/src
-COPY src/ .
+COPY src/ /app/src
+
+WORKDIR /app/src
 
 # Expose port (should match FastAPI/uvicorn)
 EXPOSE 8000
