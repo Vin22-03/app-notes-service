@@ -1,20 +1,21 @@
-# Use an official Python base image
+# Use official Python image
 FROM python:3.10-slim
 
-# Set the working directory inside the container
+# Set working directory inside container
 WORKDIR /app
 
-# Copy requirements first to leverage caching
+# Copy requirements and install dependencies
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Copy entire src folder to /app/src
+COPY src/ /app/src/
 
-# Copy the source code into the container
-COPY src/ ./src
+# Set the working directory to /app/src
+WORKDIR /app/src
 
-# Expose FastAPI port
+# Expose port (should match FastAPI/uvicorn)
 EXPOSE 8000
 
-# Run FastAPI app using uvicorn
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the app (main.py should be inside /app/src)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
