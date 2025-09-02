@@ -48,7 +48,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build --no cache -t $APP_NAME .'
+                sh 'docker build --no-cache -t $APP_NAME .'
             }
         }
 
