@@ -11,17 +11,19 @@ pipeline {
         AWS_REGION = "us-east-1"
         ECR_URL = "921483785411.dkr.ecr.us-east-1.amazonaws.com"
         FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:latest"
+        ECS_CLUSTER = "notes-app-cluster"       // 🔁 Replace with your actual ECS cluster name
+        ECS_SERVICE = "notes-service-v3"       // 🔁 Replace with your actual ECS service name
+        ECS_TASK_DEF = "vin-notes-task"         // 🔁 Replace with your ECS task definition name
     }
 
     stages {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    apt-get update && apt-get install -y awscli docker.io unzip wget
+                    apt-get update && apt-get install -y awscli docker.io unzip wget jq
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
-
                 sh '''
                     if ! command -v terraform >/dev/null; then
                         wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
@@ -39,16 +41,12 @@ pipeline {
             }
         }
 
-        stage('Check Docker') {
-            steps {
-                sh 'docker --version'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                sh 'docker build --no-cache --build-arg CACHEBUST=$(date +%s) -t $APP_NAME .'
-                sh 'docker tag $APP_NAME $FULL_IMAGE_NAME'
+                sh '''
+                    docker build --no-cache --build-arg CACHEBUST=$(date +%s) -t $APP_NAME .
+                    docker tag $APP_NAME $FULL_IMAGE_NAME
+                '''
             }
         }
 
@@ -69,7 +67,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply (Deploy Infra)') {
+        stage('Terraform Apply (Infra)') {
             steps {
                 dir('terraform') {
                     withCredentials([[
@@ -85,19 +83,49 @@ pipeline {
             }
         }
 
-        // 🚀 NEW STAGE: Trigger ECS to pick latest image
-        stage('Update ECS Service') {
+        stage('Register New Task Definition + Update ECS Service') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-ecr'
                 ]]) {
                     sh '''
+                        echo "📦 Fetching current ECS Task Definition..."
+                        aws ecs describe-task-definition \
+                            --task-definition $ECS_TASK_DEF \
+                            --region $AWS_REGION \
+                            > current-task.json
+
+                        echo "🧪 Updating image to $FULL_IMAGE_NAME..."
+
+                        NEW_TASK_DEF=$(cat current-task.json | jq --arg IMAGE "$FULL_IMAGE_NAME" '
+                            {
+                                family: .taskDefinition.family,
+                                executionRoleArn: .taskDefinition.executionRoleArn,
+                                networkMode: .taskDefinition.networkMode,
+                                requiresCompatibilities: .taskDefinition.requiresCompatibilities,
+                                cpu: .taskDefinition.cpu,
+                                memory: .taskDefinition.memory,
+                                containerDefinitions: (
+                                    .taskDefinition.containerDefinitions | map(
+                                        .image = $IMAGE
+                                    )
+                                )
+                            }')
+
+                        echo "$NEW_TASK_DEF" > updated-task.json
+
+                        echo "📌 Registering new revision..."
+                        aws ecs register-task-definition \
+                            --cli-input-json file://updated-task.json \
+                            --region $AWS_REGION
+
+                        echo "🚀 Triggering ECS Deployment..."
                         aws ecs update-service \
-                          --cluster notes-app-cluster  \
-                          --service notes-service-v3 \
-                          --force-new-deployment \
-                          --region $AWS_REGION
+                            --cluster $ECS_CLUSTER \
+                            --service $ECS_SERVICE \
+                            --force-new-deployment \
+                            --region $AWS_REGION
                     '''
                 }
             }
@@ -106,10 +134,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI/CD pipeline with ECS update completed successfully!'
+            echo '✅ CI/CD pipeline executed successfully with new ECS deployment!'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs and fix errors.'
+            echo '❌ Pipeline failed. Check logs for errors.'
         }
     }
 }
