@@ -22,7 +22,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    apt-get update && apt-get install -y awscli docker.io unzip wget jq
+                    apt-get update && apt-get install -y --fix-missing awscli docker.io unzip wget jq
                     pip install --upgrade pip
                     pip install -r requirements.txt
                     if ! command -v terraform >/dev/null; then
