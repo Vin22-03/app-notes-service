@@ -10,8 +10,9 @@ pipeline {
         APP_NAME = "vin-notes-app"
         AWS_REGION = "us-east-1"
         ECR_URL = "921483785411.dkr.ecr.us-east-1.amazonaws.com"
+        BUILD_ID = "${BUILD_NUMBER}"
         FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:${IMAGE_TAG}"
-        IMAGE_TAG = "v${BUILD_NUMBER}"
+        IMAGE_TAG = "v${BUILD_ID}"
         ECS_CLUSTER = "notes-app-cluster"       // 🔁 Replace with your actual ECS cluster name
         ECS_SERVICE = "notes-service-v3"       // 🔁 Replace with your actual ECS service name
         ECS_TASK_DEF = "vin-notes-task"         // 🔁 Replace with your ECS task definition name
@@ -77,7 +78,7 @@ pipeline {
                     ]]) {
                         sh '''
                             terraform init
-                            terraform apply -auto-approve
+                            terraform apply -var="image_tag=$IMAGE_TAG" -auto-approve
                         '''
                     }
                 }
