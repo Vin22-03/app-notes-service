@@ -10,7 +10,8 @@ pipeline {
         APP_NAME = "vin-notes-app"
         AWS_REGION = "us-east-1"
         ECR_URL = "921483785411.dkr.ecr.us-east-1.amazonaws.com"
-        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:latest"
+        FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:${IMAGE_TAG}"
+        IMAGE_TAG = "v${BUILD_NUMBER}"
         ECS_CLUSTER = "notes-app-cluster"       // 🔁 Replace with your actual ECS cluster name
         ECS_SERVICE = "notes-service-v3"       // 🔁 Replace with your actual ECS service name
         ECS_TASK_DEF = "vin-notes-task"         // 🔁 Replace with your ECS task definition name
@@ -44,8 +45,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build --no-cache --build-arg CACHEBUST=$(date +%s) -t $APP_NAME .
-                    docker tag $APP_NAME $FULL_IMAGE_NAME
+                    docker build --no-cache --build-arg CACHEBUST=$(date +%s) -t $FULL_IMAGE_NAME .
+         
                 '''
             }
         }

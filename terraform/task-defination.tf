@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "notes_app_task" {
   container_definitions = jsonencode([
     {
       name      = "notes-app"
-      image     = "921483785411.dkr.ecr.us-east-1.amazonaws.com/vin-notes-app:latest"
+      image     = "921483785411.dkr.ecr.us-east-1.amazonaws.com/vin-notes-app:${var.image_tag}"
       essential = true
 
       portMappings = [
@@ -31,8 +31,4 @@ resource "aws_ecs_task_definition" "notes_app_task" {
     }
   ])
 }
- # ✅ Force ECS to replace task definition each time
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+
