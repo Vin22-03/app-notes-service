@@ -1,24 +1,33 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List
-from fastapi.responses import HTMLResponse
-import uvicorn
 from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Gauge, make_asgi_app
+import random
 
 app = FastAPI()
 
-# 📊 Prometheus monitoring
+# ✅ Automatic FastAPI instrumentation
 instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app)
 
-# 🚑 Health check endpoint for ALB
-@app.get("/healthz")
-def health_check():
-    return {"status": "ok"}
+# ✅ Manual Prometheus metrics
+REQUEST_COUNTER = Counter(
+    "app_requests_total",
+    "Total number of requests to the app",
+    ["endpoint"]
+)
+
+RANDOM_NUMBER_GAUGE = Gauge(
+    "app_random_number",
+    "Current value of the random number"
+)
 
 # 🎨 Beautiful landing page
 @app.get("/", response_class=HTMLResponse)
 def root():
+    REQUEST_COUNTER.labels(endpoint="/").inc()
     return """
     <html>
         <head>
@@ -38,58 +47,56 @@ def root():
                 p {
                     font-size: 1.2em;
                 }
-                .button {
-                    background-color: #2980b9;
-                    border: none;
-                    color: white;
-                    padding: 15px 32px;
-                    text-align: center;
-                    text-decoration: none;
-                    font-size: 16px;
-                    margin: 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                }
-                .button:hover {
-                    background-color: #3498db;
-                }
             </style>
         </head>
         <body>
-            <h1>Welcome to Vin's Notes App 🎉</h1>
-            <p>Create, view, and manage your notes with ease using FastAPI ⚡</p>
-            <a href="/docs" class="button">📚 API Docs</a>
-            <a href="/metrics" class="button">📈 Prometheus Metrics</a>
-            <a href="/notes" class="button">📝 View Notes</a>
+            <h1>📒 Welcome to Vin's Notes App</h1>
+            <p>Your notes live here on the cloud ☁️ – with Prometheus metrics enabled!</p>
+            <p>Check <a href="/metrics">/metrics</a> for Prometheus scrape info</p>
         </body>
     </html>
     """
 
-# 📝 Notes data model
+# 🚑 Health check endpoint
+@app.get("/healthz")
+def health_check():
+    REQUEST_COUNTER.labels(endpoint="/healthz").inc()
+    return {"status": "ok"}
+
+# 🎲 Endpoint to trigger random gauge
+@app.get("/random", response_class=JSONResponse)
+def get_random_number():
+    REQUEST_COUNTER.labels(endpoint="/random").inc()
+    num = random.randint(0, 100)
+    RANDOM_NUMBER_GAUGE.set(num)
+    return {"status": "ok", "random_number": num}
+
+# 📝 Notes model
 class Note(BaseModel):
     title: str
     content: str
 
-# 🧠 In-memory notes store
+# 📚 In-memory storage
 notes_db: List[Note] = []
 
-# ➕ Add new note
 @app.post("/notes")
 def create_note(note: Note):
+    REQUEST_COUNTER.labels(endpoint="/notes_post").inc()
     notes_db.append(note)
-    return {"message": "Note added successfully!", "note": note}
+    return {"message": "Note added ✅", "note": note}
 
-# 📋 Get all notes
 @app.get("/notes")
 def get_notes():
+    REQUEST_COUNTER.labels(endpoint="/notes_get").inc()
     return notes_db
 
-# 🗑️ Delete all notes
 @app.delete("/notes")
 def delete_notes():
+    REQUEST_COUNTER.labels(endpoint="/notes_delete").inc()
     notes_db.clear()
     return {"message": "All notes deleted."}
 
-# 🚀 Run app
+# 🔥 Local run only
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
