@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from typing import List
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import Counter, Gauge, make_asgi_app
+from prometheus_client import Counter, Gauge
 import random
 
 app = FastAPI()
@@ -60,7 +60,7 @@ def root():
 # 🚑 Health check endpoint
 @app.get("/health")
 def health_check():
-    REQUEST_COUNTER.labels(endpoint="/healthz").inc()
+    REQUEST_COUNTER.labels(endpoint="/health").inc()
     return {"status": "ok"}
 
 # 🎲 Endpoint to trigger random gauge
