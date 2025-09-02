@@ -58,7 +58,7 @@ def root():
     """
 
 # 🚑 Health check endpoint
-@app.get("/healthz")
+@app.get("/health")
 def health_check():
     REQUEST_COUNTER.labels(endpoint="/healthz").inc()
     return {"status": "ok"}
