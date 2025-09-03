@@ -67,6 +67,30 @@ pipeline {
             }
         }
 
+        stage('Import Existing AWS Resources') {
+        steps {
+        dir('terraform') {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-ecr'
+            ]]) {
+                sh '''
+                    set -ex
+
+                    # Import existing Log Group
+                    terraform import aws_cloudwatch_log_group.notes_logs /ecs/notes-app-v3 || true
+
+                    # Import existing ALB
+                    terraform import aws_lb.notes_alb arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v3/a59acd84b05eebab || true
+
+                    # Import existing Target Group
+                    terraform import aws_lb_target_group.notes_tg arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v3/fa2f5027c1bcc846 || true
+                '''
+            }
+        }
+    }
+}
+
         stage('Deploy with Terraform') {
             steps {
                 dir('terraform') {
