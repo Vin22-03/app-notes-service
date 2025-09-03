@@ -1,5 +1,5 @@
 pipeline {
-    agent {
+    agentany {
         docker {
             image 'vincloudops/jenkins-devops:latest' // <-- Your custom Docker image with all tools
             args '--user root'
