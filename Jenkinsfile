@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'vincloudops/python-aws-tf:latest' // <-- Your custom Docker image with all tools
+            image 'vincloudops/jenkins-devops:latest' // <-- Your custom Docker image with all tools
             args '--user root'
         }
     }
