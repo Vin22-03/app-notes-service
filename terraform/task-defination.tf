@@ -1,4 +1,4 @@
-resource "aws_ecs_task_definition" "notes_app_task" {
+resource "aws_ecs_task_definition" "notes_app_task_v4" {
   family                   = "notes-app-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]

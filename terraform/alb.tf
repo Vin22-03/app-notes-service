@@ -1,4 +1,4 @@
- resource "aws_lb" "notes_alb" {
+ resource "aws_lb" "notes_alb_v4" {
   name               = "notes-alb-v4"
   internal           = false
   load_balancer_type = "application"
@@ -23,7 +23,7 @@ resource "aws_lb_target_group" "notes_tg_v4" {
   }
 }
 
-resource "aws_lb_listener" "notes_listener" {
+resource "aws_lb_listener" "notes_listener_v4" {
   load_balancer_arn = aws_lb.notes_alb_v4.arn
   port              = "80"
   protocol          = "HTTP"
