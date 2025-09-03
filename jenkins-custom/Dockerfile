@@ -2,24 +2,25 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# 🛠️ Install required tools
-RUN apt-get update && \
-    apt-get install -y docker.io curl unzip gnupg software-properties-common && \
-    apt-get install -y python3 python3-pip
+# Update and install required packages
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip \
+    docker.io \
+    unzip wget curl jq \
+    awscli \
+    gnupg software-properties-common
 
-# 🔧 Install AWS CLI v2
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && ./aws/install && \
-    rm -rf awscliv2.zip aws
+# Install Terraform (1.6.6)
+RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip && \
+    unzip terraform_1.6.6_linux_amd64.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform_1.6.6_linux_amd64.zip
 
-# 🔧 Install Terraform (without lsb_release)
-ENV DEBIAN_FRONTEND=noninteractive
-RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
-    echo "deb [trusted=yes] https://apt.releases.hashicorp.com bullseye main" | tee /etc/apt/sources.list.d/hashicorp.list && \
-    apt-get update && \
-    apt-get install -y terraform
+# Upgrade pip and install Python packages
+RUN pip3 install --upgrade pip --break-system-packages && \
+    pip3 install pytest --break-system-packages
 
-# 🧹 Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Add Jenkins user to Docker group
+RUN usermod -aG docker jenkins
 
 USER jenkins
