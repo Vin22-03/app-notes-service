@@ -26,7 +26,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'PYTHONPATH=. pytest -q'
+                sh 'PYTHONPATH=. python3 -m pytest -q'
             }
         }
 
