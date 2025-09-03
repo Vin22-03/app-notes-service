@@ -49,6 +49,24 @@ pipeline {
             }
         }
 
+        // ⚠️ TEMPORARY STAGE – Use only once to destroy old infra
+        stage('Destroy Old Infra (One Time)') {
+            steps {
+                dir('terraform') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-ecr'
+                    ]]) {
+                        sh '''
+                            set -ex
+                            terraform init
+                            terraform destroy -auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Deploy with Terraform') {
             steps {
                 dir('terraform') {
