@@ -60,7 +60,7 @@ pipeline {
                         sh '''
                             set -ex
                             terraform init
-                            terraform destroy -auto-approve
+                            terraform destroy -var="image_tag=dummy" -auto-approve
                         '''
                     }
                 }
