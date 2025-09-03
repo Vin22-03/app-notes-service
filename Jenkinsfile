@@ -1,10 +1,5 @@
 pipeline {
-    agent any {
-        docker {
-            image 'vincloudops/jenkins-devops:latest' // <-- Your custom Docker image with all tools
-            args '--user root'
-        }
-    }
+    agent any
 
     environment {
         APP_NAME        = "vin-notes-app"
@@ -23,6 +18,7 @@ pipeline {
             steps {
                 sh '''
                     set -ex
+                    git config --global --add safe.directory "*"
                     PYTHONPATH=. pytest -q
                 '''
             }
