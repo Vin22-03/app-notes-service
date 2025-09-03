@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10-slim'
-            args '--user root'
-        }
-    }
+    agent any
 
     environment {
         APP_NAME     = "vin-notes-app"
@@ -19,18 +14,11 @@ pipeline {
     }
 
     stages {
-        stage('Install Dependencies') {
+        stage('Install Python Dependencies') {
             steps {
                 sh '''
-                    apt-get update && apt-get install -y --fix-missing awscli docker.io unzip wget jq
                     pip install --upgrade pip
                     pip install -r requirements.txt
-                    if ! command -v terraform >/dev/null; then
-                        wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip
-                        unzip -o /tmp/terraform.zip -d /usr/local/bin/
-                        chmod +x /usr/local/bin/terraform
-                    fi
-                    terraform -version
                 '''
             }
         }
@@ -62,7 +50,6 @@ pipeline {
             }
         }
 
-
         stage('Terraform Apply (Infra)') {
             steps {
                 dir('terraform') {
@@ -79,7 +66,7 @@ pipeline {
             }
         }
 
-        stage('Register New Task Definition + Update ECS Service') {
+        stage('Register Task Definition + Update ECS') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
@@ -125,7 +112,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI/CD pipeline executed successfully with Terraform destroy + new ECS deployment!'
+            echo '✅ CI/CD pipeline executed successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs for errors.'
