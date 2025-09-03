@@ -9,7 +9,7 @@ resource "aws_ecs_task_definition" "notes_app_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "notes-app-v3"
+      name      = "notes-app-v4"
       image     = "921483785411.dkr.ecr.us-east-1.amazonaws.com/vin-notes-app:${var.image_tag}"
       essential = true
 
@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "notes_app_task" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "/ecs/notes-app-v3"
+          awslogs-group         = "/ecs/notes-app-v4"
           awslogs-region        = "us-east-1"
           awslogs-stream-prefix = "ecs"
         }

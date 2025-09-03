@@ -9,8 +9,8 @@ pipeline {
         IMAGE_TAG       = "v${BUILD_ID}"
         FULL_IMAGE_NAME = "${ECR_URL}/${APP_NAME}:${IMAGE_TAG}"
         ECS_CLUSTER     = "notes-app-cluster"
-        ECS_SERVICE     = "notes-service-v3"
-        ECS_TASK_DEF    = "vin-notes-task"
+        ECS_SERVICE     = "notes-service-v4"
+        ECS_TASK_DEF    = "vin-notes-task-v4"
     }
 
     stages {
@@ -48,6 +48,7 @@ pipeline {
                 }
             }
         }
+/*
 
         // ⚠️ TEMPORARY STAGE – Use only once to destroy old infra
         stage('Destroy Old Infra (One Time)') {
@@ -90,6 +91,7 @@ pipeline {
         }
     }
 }
+*/
 
         stage('Deploy with Terraform') {
             steps {
