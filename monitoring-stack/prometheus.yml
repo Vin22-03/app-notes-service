@@ -5,4 +5,5 @@ scrape_configs:
   - job_name: "my_notes_app"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["notes-alb-v3-1286106134.us-east-1.elb.amazonaws.com:80"]
+      - targets: ["notes-alb-v4-555928005.us-east-1.elb.amazonaws.com:80"]
+

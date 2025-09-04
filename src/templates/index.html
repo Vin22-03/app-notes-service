@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VinCloudOps Notes App 📒</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: #f7f7f7;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 3em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .note {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ffffff20;
+            padding: 15px;
+            margin: 10px auto;
+            width: 60%;
+            border-radius: 5px;
+            text-align: left;
+            color: #fff;
+        }
+        input, textarea {
+            padding: 10px;
+            margin: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #00bfff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 Vin's Cloud Notes</h1>
+    <p><strong>VinCloudOps Notes</strong> – Smart Notes. Smarter DevOps. ⚙️🚀</p>
+
+    <input id="title" placeholder="Note title" /><br/>
+    <textarea id="content" placeholder="Note content"></textarea><br/>
+    <button onclick="addNote()">➕ Add Note</button>
+    <button onclick="deleteAll()">🗑️ Delete All</button>
+
+    <h2>📚 Notes:</h2>
+    <div id="notes"></div>
+
+    <script>
+        async function fetchNotes() {
+            const res = await fetch("/notes");
+            const notes = await res.json();
+            const notesDiv = document.getElementById("notes");
+            notesDiv.innerHTML = "";
+            notes.forEach(note => {
+                const el = document.createElement("div");
+                el.className = "note";
+                el.innerHTML = `<strong>${note.title}</strong><br/>${note.content}`;
+                notesDiv.appendChild(el);
+            });
+        }
+
+        async function addNote() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+            await fetch("/notes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content })
+            });
+            document.getElementById("title").value = "";
+            document.getElementById("content").value = "";
+            fetchNotes();
+        }
+
+        async function deleteAll() {
+            await fetch("/notes", { method: "DELETE" });
+            fetchNotes();
+        }
+
+        fetchNotes();
+    </script>
+</body>
+</html>
