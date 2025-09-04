@@ -2,11 +2,11 @@ resource "aws_lb" "notes_alb_v4" {
   name               = "notes-alb-v4"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = ["sg-0cedc02bb50dd61e8"] # ✅ Matches real AWS SG
+  security_groups    = ["sg-0cedc02bb50dd61e8"]
   subnets            = aws_subnet.public[*].id
 
   lifecycle {
-    ignore_changes = [security_groups] # Prevent recreate due to SG mismatch
+    ignore_changes = [security_groups]
   }
 
   tags = {
@@ -20,7 +20,7 @@ resource "aws_lb_target_group" "notes_tg_v4" {
   port        = 8000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "ip" # ✅ Required for Fargate
+  target_type = "ip"
 
   health_check {
     path                = "/health"
@@ -31,8 +31,9 @@ resource "aws_lb_target_group" "notes_tg_v4" {
     matcher             = "200"
   }
 
+  # ❌ Removed prevent_destroy temporarily for safe apply
+
   lifecycle {
-    prevent_destroy = true
     ignore_changes = [
       stickiness,
       deregistration_delay,
