@@ -10,7 +10,7 @@ resource "aws_ecs_service" "notes_service_v4" {
   "subnet-0c9e45bd7228d8e23",
   "subnet-0cd730e7a5a240b8d"
     ]
-    security_groups = [aws_security_group.app_sg.id]
+    security_groups = ["sg-0cedc02bb50dd61e8"]
     assign_public_ip = true
   }
 
