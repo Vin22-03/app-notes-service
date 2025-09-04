@@ -61,10 +61,10 @@ pipeline {
                             set -ex
                             terraform init
 
-                            # Import existing AWS resources into TF state
-                            terraform import aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
-                            terraform import aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/a59acd84b05eebab || true
-                            terraform import aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/fa2f5027c1bcc846 || true
+                            # Pass image_tag variable during import to avoid prompt failure
+                            terraform import -var="image_tag=$IMAGE_TAG" aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
+                            terraform import -var="image_tag=$IMAGE_TAG" aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/a59acd84b05eebab || true
+                            terraform import -var="image_tag=$IMAGE_TAG" aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/fa2f5027c1bcc846 || true
                         '''
                     }
                 }
