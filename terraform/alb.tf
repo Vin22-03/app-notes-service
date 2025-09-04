@@ -3,7 +3,10 @@ resource "aws_lb" "notes_alb_v4" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = ["sg-0cedc02bb50dd61e8"]
-  subnets            = aws_subnet.public[*].id
+  subnets            = [
+    "subnet-0c9e45bd7228d8e23",
+    "subnet-0cd730e7a5a240b8d"
+  ]
 
   lifecycle {
     ignore_changes = [security_groups]
@@ -31,8 +34,6 @@ resource "aws_lb_target_group" "notes_tg_v4" {
     matcher             = "200"
   }
 
-  # ❌ Removed prevent_destroy temporarily for safe apply
-
   lifecycle {
     ignore_changes = [
       stickiness,
@@ -57,8 +58,6 @@ resource "aws_lb_listener" "notes_listener_v4" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.notes_tg_v4.arn
   }
-
-  depends_on = [aws_lb_target_group.notes_tg_v4]
 
   tags = {
     Name = "notes-listener-v4"
