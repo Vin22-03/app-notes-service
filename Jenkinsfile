@@ -13,28 +13,16 @@ pipeline {
         ECS_TASK_DEF    = "vin-notes-task-v4"
     }
 
-    stages {
-        stage('Run Tests') {
-           agent any {
-            docker {
-                 image 'python:3.11-slim'
-                 }
-              }
-            steps {
-                sh '''
-                    set -ex
-                  
-                      apt-get update && apt-get install -y python3.11-venv
-                     
-                    python3 -m venv venv
-                    . venv/bin/activate
-
-                    pip install --no-cache-dir -r requirements.txt
-
-                    PYTHONPATH=. pytest -q
-                '''
-            }
-        }
+  stage('Run Tests') {
+     agent any
+       steps {
+        sh '''
+            set -ex
+            pip install --break-system-packages --no-cache-dir -r requirements.txt
+            PYTHONPATH=. pytest -q
+        '''
+    }
+}
 
         stage('Build Docker Image') {
             steps {
