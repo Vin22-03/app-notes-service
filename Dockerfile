@@ -10,9 +10,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy entire src folder to /app/src
-COPY src/ /app/src
+COPY ./src /app
 
-WORKDIR /app/src
 
 # Expose port (should match FastAPI/uvicorn)
 EXPOSE 8000
