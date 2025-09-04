@@ -6,7 +6,10 @@ resource "aws_ecs_service" "notes_service_v4" {
   desired_count   = 1
 
   network_configuration {
-    subnets         = aws_subnet.public[*].id
+    subnets = [
+  "subnet-0c9e45bd7228d8e23",
+  "subnet-0cd730e7a5a240b8d"
+    ]
     security_groups = [aws_security_group.app_sg.id]
     assign_public_ip = true
   }
