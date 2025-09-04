@@ -12,19 +12,18 @@ pipeline {
         ECS_SERVICE     = "notes-service-v4"
         ECS_TASK_DEF    = "vin-notes-task-v4"
     }
- 
-stages {  
- 
-  stage('Run Tests') {
-     agent any
-       steps {
-        sh '''
-            set -ex
-            pip install --break-system-packages --no-cache-dir -r requirements.txt
-            PYTHONPATH=. pytest -q
-        '''
-    }
-}
+
+    stages {
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    set -ex
+                    pip install --break-system-packages --no-cache-dir -r requirements.txt
+                    PYTHONPATH=. pytest -q
+                '''
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -51,8 +50,7 @@ stages {
             }
         }
 
-        /*
-        stage('Destroy Old Infra (One Time)') {
+        stage('Terraform Import Existing Resources') {
             steps {
                 dir('terraform') {
                     withCredentials([[
@@ -62,14 +60,18 @@ stages {
                         sh '''
                             set -ex
                             terraform init
-                            terraform destroy -var="image_tag=dummy" -auto-approve
+
+                            # Import existing AWS resources into TF state
+                            terraform import aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
+                            terraform import aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/a59acd84b05eebab || true
+                            terraform import aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/fa2f5027c1bcc846 || true
                         '''
                     }
                 }
             }
         }
 
-        stage('Import Existing AWS Resources') {
+        stage('Terraform Plan After Import') {
             steps {
                 dir('terraform') {
                     withCredentials([[
@@ -78,15 +80,12 @@ stages {
                     ]]) {
                         sh '''
                             set -ex
-                            terraform import aws_cloudwatch_log_group.notes_logs /ecs/notes-app-v3 || true
-                            terraform import aws_lb.notes_alb arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v3/a59acd84b05eebab || true
-                            terraform import aws_lb_target_group.notes_tg arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v3/fa2f5027c1bcc846 || true
+                            terraform plan -var="image_tag=$IMAGE_TAG"
                         '''
                     }
                 }
             }
         }
-        */
 
         stage('Deploy with Terraform') {
             steps {
@@ -97,7 +96,6 @@ stages {
                     ]]) {
                         sh '''
                             set -ex
-                            terraform init
                             terraform apply -var="image_tag=$IMAGE_TAG" -auto-approve
                         '''
                     }
