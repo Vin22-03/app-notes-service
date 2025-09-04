@@ -41,6 +41,7 @@ resource "aws_lb_target_group" "notes_tg_v4" {
       slow_start,
       tags_all
     ]
+    prevent_destroy = false
   }
 
   tags = {
@@ -49,18 +50,20 @@ resource "aws_lb_target_group" "notes_tg_v4" {
   }
 }
 
-#resource "aws_lb_listener" "notes_listener_v4" {
- # load_balancer_arn = aws_lb.notes_alb_v4.arn
- # port              = 80
- # protocol          = "HTTP"
-#
- # default_action {
- #   type             = "forward"
- #   target_group_arn = aws_lb_target_group.notes_tg_v4.arn
- # }
+resource "aws_lb_listener" "notes_listener_v4" {
+  load_balancer_arn = aws_lb.notes_alb_v4.arn
+  port              = 80
+  protocol          = "HTTP"
 
- # tags = {
- #   Name = "notes-listener-v4"
- #   Env  = "Dev"
- # }
-#}
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.notes_tg_v4.arn
+  }
+
+  tags = {
+    Name = "notes-listener-v4"
+    Env  = "Dev"
+  }
+
+  depends_on = [aws_lb_target_group.notes_tg_v4]
+}
