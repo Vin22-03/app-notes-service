@@ -12,6 +12,7 @@ pipeline {
         ECS_SERVICE     = "notes-service-v4"
         ECS_TASK_DEF    = "vin-notes-task-v4"
     }
+}
 
        stage('Run Tests') {
           steps {
