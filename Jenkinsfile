@@ -19,6 +19,7 @@ pipeline {
                 sh '''
                     set -ex
                     git config --global --add safe.directory "*"
+                    pip install -r requirements.txt
                     PYTHONPATH=. pytest -q
                 '''
             }
