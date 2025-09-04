@@ -22,7 +22,7 @@ resource "aws_lb_target_group" "notes_tg_v4" {
   name        = "notes-tg-v4"
   port        = 8000
   protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = "vpc-0210ac57d9d16c303"
   target_type = "ip"
 
   health_check {
