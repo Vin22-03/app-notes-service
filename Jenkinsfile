@@ -50,6 +50,23 @@ pipeline {
             }
         }
 
+        stage('🩹 Terraform State Fix (Temporary)') {
+            steps {
+                dir('terraform') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-ecr'
+                    ]]) {
+                        sh '''
+                            set -ex
+                            terraform init
+                            terraform state rm aws_lb_target_group.notes_tg_v4 || true
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Terraform Import Existing Resources') {
             steps {
                 dir('terraform') {
@@ -61,7 +78,6 @@ pipeline {
                             set -ex
                             terraform init
 
-                            # Pass image_tag variable during import to avoid prompt failure
                             terraform import -var="image_tag=$IMAGE_TAG" aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
                             terraform import -var="image_tag=$IMAGE_TAG" aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/85196f3ad9604335 || true
                             terraform import -var="image_tag=$IMAGE_TAG" aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/774f7dacb29d6f77 || true
