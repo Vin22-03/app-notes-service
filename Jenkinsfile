@@ -13,17 +13,24 @@ pipeline {
         ECS_TASK_DEF    = "vin-notes-task-v4"
     }
 
-    stages {
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    set -ex
-                    git config --global --add safe.directory "*"
-                    pip install -r requirements.txt
-                    PYTHONPATH=. pytest -q
-                '''
-            }
-        }
+       stage('Run Tests') {
+          steps {
+           sh '''
+            set -ex
+            git config --global --add safe.directory "*"
+
+            # Create a virtual environment to avoid system Python restrictions
+            python3 -m venv venv
+            . venv/bin/activate
+
+            # Install requirements inside the virtualenv
+            pip install --no-cache-dir -r requirements.txt
+
+            # Run your tests
+            PYTHONPATH=. pytest -q
+        '''
+    }
+}
 
         stage('Build Docker Image') {
             steps {
