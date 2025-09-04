@@ -2,6 +2,9 @@ FROM jenkins/jenkins:lts
 
 USER root
 
+# Set ARG to dynamically pass host Docker group GID during build
+ARG DOCKER_GID=1001
+
 # Update and install required packages
 RUN apt-get update && apt-get install -y \
     python3 python3-pip \
@@ -20,7 +23,9 @@ RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_am
 RUN pip3 install --upgrade pip --break-system-packages && \
     pip3 install pytest --break-system-packages
 
-# Add Jenkins user to Docker group
-RUN usermod -aG docker jenkins
+# 👇 This is the KEY PART to fix permission error
+# Re-create docker group with same GID as host, and add jenkins user to it
+RUN groupadd -g ${DOCKER_GID} docker && \
+    usermod -aG docker jenkins
 
 USER jenkins
