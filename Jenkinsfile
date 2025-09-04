@@ -15,11 +15,17 @@ pipeline {
 
     stages {
         stage('Run Tests') {
+           agent {
+            docker {
+                 image 'python:3.11-slim'
+                 }
+              }
             steps {
                 sh '''
                     set -ex
-                    git config --global --add safe.directory "*"
-
+                  
+                      apt-get update && apt-get install -y python3.11-venv
+                     
                     python3 -m venv venv
                     . venv/bin/activate
 
