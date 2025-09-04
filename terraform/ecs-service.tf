@@ -19,5 +19,5 @@ resource "aws_ecs_service" "notes_service_v4" {
 
   force_new_deployment = true
 
-  depends_on = [aws_lb_listener.notes_listener_v4]
+#  depends_on = [aws_lb_listener.notes_listener_v4]
 }
