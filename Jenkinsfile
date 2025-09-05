@@ -56,7 +56,14 @@ pipeline {
         script {
             def scannerHome = tool 'SonarScanner'
             withSonarQubeEnv('SonarLocal') {
-                sh "${scannerHome}/bin/sonar-scanner"
+                sh '''
+                sonar-scanner \
+                  -Dsonar.projectKey=vin-notes-app \
+                  -Dsonar.sources=src \
+                  -Dsonar.host.url=http://host.docker.internal:9000
+            '''      
+
+          
             }
         }
     }
