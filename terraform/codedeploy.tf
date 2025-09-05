@@ -48,3 +48,29 @@ resource "aws_codedeploy_deployment_group" "ecs_dg" {
     }
   }
 }
+# Trust policy: let CodeDeploy assume this role
+data "aws_iam_policy_document" "codedeploy_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["codedeploy.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# Service role for CodeDeploy (referenced by the deployment group)
+resource "aws_iam_role" "codedeploy_role" {
+  name               = "vin-codedeploy-role"
+  assume_role_policy = data.aws_iam_policy_document.codedeploy_assume_role.json
+  tags = {
+    Name = "vin-codedeploy-role"
+  }
+}
+
+# Attach AWS-managed policy for ECS blue/green support
+resource "aws_iam_role_policy_attachment" "codedeploy_role_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForECS"
+}
