@@ -11,10 +11,11 @@ pipeline {
         ECS_CLUSTER     = "notes-app-cluster"
         ECS_SERVICE     = "notes-service-v4"
         ECS_TASK_DEF    = "vin-notes-task-v4"
+        TF_BUCKET       = "vin-tfstate-bucket"
+        TF_STATE_KEY    = "notes-app/terraform.tfstate"
     }
 
     stages {
-
         stage('Run Tests') {
             steps {
                 sh '''
@@ -50,7 +51,7 @@ pipeline {
             }
         }
 
-        stage('🩹 Terraform State Fix (Temporary)') {
+        stage('Terraform Deploy with S3 Backend') {
             steps {
                 dir('terraform') {
                     withCredentials([[
@@ -59,74 +60,35 @@ pipeline {
                     ]]) {
                         sh '''
                             set -ex
-                            terraform init
-                            terraform state rm aws_lb_target_group.notes_tg_v4 || true
-                        '''
-                    }
-                }
-            }
-        }
+                            terraform init -backend-config="bucket=$TF_BUCKET" \
+                                           -backend-config="key=$TF_STATE_KEY" \
+                                           -backend-config="region=$AWS_REGION"
 
-        stage('Terraform Import Existing Resources') {
-            steps {
-                dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-ecr'
-                    ]]) {
-                        sh '''
-                            set -ex
-                            terraform init
-
-                            terraform import -var="image_tag=$IMAGE_TAG" aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
-                            terraform import -var="image_tag=$IMAGE_TAG" aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/85196f3ad9604335 || true
-                            terraform import -var="image_tag=$IMAGE_TAG" aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/15c1ad03151aa9ad || true
-                            terraform import -var="image_tag=$IMAGE_TAG" aws_ecs_service.notes_service_v4 notes-app-cluster/notes-service-v4 || true
-                            '''
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Plan After Import') {
-            steps {
-                dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-ecr'
-                    ]]) {
-                        sh '''
-                            set -ex
-                            terraform plan -var="image_tag=$IMAGE_TAG"
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Deploy with Terraform') {
-            steps {
-                dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-ecr'
-                    ]]) {
-                        sh '''
-                            set -ex
                             terraform apply -var="image_tag=$IMAGE_TAG" -auto-approve
                         '''
                     }
                 }
             }
         }
+
+        stage('Verify ECS Service') {
+            steps {
+                sh '''
+                    aws ecs describe-services \
+                      --cluster $ECS_CLUSTER \
+                      --services $ECS_SERVICE \
+                      --region $AWS_REGION
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ CI/CD pipeline executed successfully with ECS deployment!'
+            echo '✅ CI/CD pipeline with S3 state backend executed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Please check logs above.'
+            echo '❌ Pipeline failed. Check logs for more details.'
         }
     }
 }

@@ -4,6 +4,10 @@ resource "aws_ecs_service" "notes_service_v4" {
   task_definition = aws_ecs_task_definition.notes_app_task_v4.arn
   launch_type     = "FARGATE"
   desired_count   = 1
+ 
+  deployment_controller {
+    type = "CODE_DEPLOY"
+  }
 
   network_configuration {
     subnets = [
@@ -20,7 +24,5 @@ resource "aws_ecs_service" "notes_service_v4" {
     container_port   = 8000
   }
 
-  force_new_deployment = true
-
-  depends_on = [aws_lb_listener.notes_listener_v4]
+    depends_on = [aws_lb_listener.notes_listener_v4]
 }
