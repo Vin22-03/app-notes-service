@@ -49,6 +49,37 @@ resource "aws_lb_target_group" "notes_tg_v4" {
     Env  = "Dev"
   }
 }
+resource "aws_lb_target_group" "notes_tg_v4_green" {
+  name        = "notes-tg-v4-green"
+  port        = 8000
+  protocol    = "HTTP"
+  vpc_id      = "vpc-0210ac57d9d16c303"
+  target_type = "ip"
+
+  health_check {
+    path                = "/health"
+    interval            = 30
+    timeout             = 10
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      stickiness,
+      deregistration_delay,
+      slow_start,
+      tags_all
+    ]
+    prevent_destroy = false
+  }
+
+  tags = {
+    Name = "notes-tg-v4-green"
+    Env  = "Dev"
+  }
+}
 
 resource "aws_lb_listener" "notes_listener_v4" {
   load_balancer_arn = aws_lb.notes_alb_v4.arn
