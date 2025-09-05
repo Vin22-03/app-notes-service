@@ -7,7 +7,7 @@ resource "aws_codedeploy_app" "ecs_app" {
 resource "aws_codedeploy_deployment_group" "ecs_dg" {
   app_name              = aws_codedeploy_app.ecs_app.name
   deployment_group_name = "vin-notes-dg"
-  service_role_arn      = "aws_iam_role.codedeploy_role.arn"
+  service_role_arn      = aws_iam_role.codedeploy_role.arn
 
   deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
 
