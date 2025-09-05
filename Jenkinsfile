@@ -28,6 +28,29 @@ pipeline {
             }
         }
 
+        // 🔒 New DevSecOps Stage 1 — Trivy Image Scan
+        stage('Trivy Scan 🔍') {
+            steps {
+                sh '''
+                    set -ex
+                    echo "🔍 Running Trivy vulnerability scan..."
+                    docker build -t $APP_NAME:ci-$BUILD_ID .
+                    trivy image --exit-code 0 --severity CRITICAL,HIGH $APP_NAME:ci-$BUILD_ID
+                '''
+            }
+        }
+
+        // 📦 New DevSecOps Stage 2 — SBOM Generation with Syft
+        stage('Generate SBOM 📦') {
+            steps {
+                sh '''
+                    set -ex
+                    echo "📦 Generating SBOM..."
+                    syft $APP_NAME:ci-$BUILD_ID -o spdx-json > sbom-$BUILD_ID.json
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh '''
@@ -74,46 +97,46 @@ pipeline {
             }
         }
 
-       stage('Trigger CodeDeploy Deployment') {
-           steps {
-               withCredentials([[
-                     $class: 'AmazonWebServicesCredentialsBinding',
-                       credentialsId: 'aws-ecr'
-                  ]]) {
-             sh '''
-                set -ex
-                    aws deploy create-deployment \
-                        --application-name vin-notes-codedeploy \
-                        --deployment-group-name vin-notes-dg \
-                        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-                        --region us-east-1 \
-                        --revision revisionType=AppSpecContent,appSpecContent={content="version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: vin-notes-task-v4\n        LoadBalancerInfo:\n          ContainerName: notes-app-v4\n          ContainerPort: 8000"}
-
-            '''
+        stage('Trigger CodeDeploy Deployment') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-ecr'
+                ]]) {
+                    sh '''
+                        set -ex
+                        aws deploy create-deployment \
+                            --application-name vin-notes-codedeploy \
+                            --deployment-group-name vin-notes-dg \
+                            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+                            --region us-east-1 \
+                            --revision revisionType=AppSpecContent,appSpecContent={content="version: 1\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: vin-notes-task-v4\\n        LoadBalancerInfo:\\n          ContainerName: notes-app-v4\\n          ContainerPort: 8000"}
+                    '''
+                }
+            }
         }
-    }
-}
 
-    stage('Verify ECS Service') {
-          steps {
-              withCredentials([[
-                 $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-ecr'  // 👈 Your Jenkins credential ID
-                      ]]) {
-                         sh '''
-                           aws ecs describe-services \
+        stage('Verify ECS Service') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-ecr'
+                ]]) {
+                    sh '''
+                        set -ex
+                        aws ecs describe-services \
                             --cluster $ECS_CLUSTER \
                             --services $ECS_SERVICE \
                             --region $AWS_REGION
-            '''
-         }
-      }
-   }
+                    '''
+                }
+            }
+        }
+    }
 
-}
     post {
         success {
-            echo '✅ CI/CD pipeline with Blue/Green Deployment completed successfully!'
+            echo '✅ CI/CD pipeline with DevSecOps + Blue/Green ECS Deployment completed successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs for errors!'

@@ -23,9 +23,15 @@ RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_am
 RUN pip3 install --upgrade pip --break-system-packages && \
     pip3 install pytest --break-system-packages
 
+# 🔐 Install Trivy (vulnerability scanner)
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# 📦 Install Syft (SBOM generator)
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
 # 👇 This is the KEY PART to fix permission error
 # Re-create docker group with same GID as host, and add jenkins user to it
-RUN groupadd -g ${DOCKER_GID} docker && \
+RUN groupmod -g ${DOCKER_GID} docker || true && \
     usermod -aG docker jenkins
 
 USER jenkins
