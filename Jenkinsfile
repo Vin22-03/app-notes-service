@@ -13,6 +13,8 @@ pipeline {
         ECS_TASK_DEF    = "vin-notes-task-v4"
         TF_BUCKET       = "vin-tfstate-bucket"
         TF_STATE_KEY    = "notes-app/terraform.tfstate"
+        DEPLOYMENT_GROUP = "notes-app-deployment-group"
+        CODEDEPLOY_APP   = "notes-app-codedeploy"
     }
 
     stages {
@@ -72,6 +74,25 @@ pipeline {
             }
         }
 
+        stage('Trigger CodeDeploy Deployment') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-ecr'
+                ]]) {
+                    sh '''
+                        set -ex
+                        aws deploy create-deployment \
+                          --application-name $CODEDEPLOY_APP \
+                          --deployment-group-name $DEPLOYMENT_GROUP \
+                          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+                          --region $AWS_REGION \
+                          --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"version: 1\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: $ECS_TASK_DEF\\n        LoadBalancerInfo:\\n          ContainerName: notes-app-v4\\n          ContainerPort: 8000\"}"
+                    '''
+                }
+            }
+        }
+
         stage('Verify ECS Service') {
             steps {
                 sh '''
@@ -86,10 +107,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI/CD pipeline with S3 state backend executed successfully!'
+            echo '✅ CI/CD pipeline with Blue/Green Deployment completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs for more details.'
+            echo '❌ Pipeline failed. Check logs for errors!'
         }
     }
 }
