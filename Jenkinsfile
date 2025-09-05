@@ -83,7 +83,7 @@ pipeline {
              sh '''
                 set -ex
                     aws deploy create-deployment \
-                        --application-name notes-app-codedeploy \
+                        --application-name vin-notes-codedeploy \
                         --deployment-group-name notes-app-deployment-group \
                         --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
                         --region us-east-1 \
