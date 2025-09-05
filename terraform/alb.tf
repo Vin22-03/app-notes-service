@@ -10,6 +10,7 @@ resource "aws_lb" "notes_alb_v4" {
 
   lifecycle {
     ignore_changes = [security_groups]
+    prevent_destroy = true
   }
 
   tags = {
@@ -41,7 +42,8 @@ resource "aws_lb_target_group" "notes_tg_v4" {
       slow_start,
       tags_all
     ]
-    prevent_destroy = false
+    prevent_destroy = true
+    ignore_changes = [tags_all, security_groups]
   }
 
   tags = {
@@ -72,7 +74,7 @@ resource "aws_lb_target_group" "notes_tg_v4_green" {
       slow_start,
       tags_all
     ]
-    prevent_destroy = false
+    prevent_destroy = flase
   }
 
   tags = {
