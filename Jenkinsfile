@@ -64,7 +64,7 @@ pipeline {
                                            -backend-config="key=$TF_STATE_KEY" \
                                            -backend-config="region=$AWS_REGION"
 
-                            terraform apply -var="image_tag=$IMAGE_TAG" -auto-approve
+                            terraform apply -var="image_tag=$IMAGE_TAG" -var="ecs_cluster=$ECS_CLUSTER" -auto-approve
                         '''
                     }
                 }
