@@ -36,6 +36,15 @@ RUN curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/s
     ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
     rm sonar-scanner.zip
 
+# Install Java 17 (Required for SonarScanner 4.8+)
+
+RUN apt-get update && apt-get install -y openjdk-17-jdk
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+
+
 # 🛠️ Re-create docker group and add Jenkins to it (to avoid socket permission errors)
 RUN groupmod -g ${DOCKER_GID} docker || true && \
     usermod -aG docker jenkins
