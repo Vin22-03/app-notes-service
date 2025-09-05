@@ -60,7 +60,8 @@ pipeline {
                     ]]) {
                         sh '''
                             set -ex
-                            terraform init -backend-config="bucket=$TF_BUCKET" \
+                            terraform init -input=false \
+                                           -backend-config="bucket=$TF_BUCKET" \
                                            -backend-config="key=$TF_STATE_KEY" \
                                            -backend-config="region=$AWS_REGION"
 
