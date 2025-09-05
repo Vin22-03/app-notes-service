@@ -51,22 +51,14 @@ pipeline {
             }
         }
             
-         stage('SonarQube Scan') {
-    steps {
-        script {
-            def scannerHome = tool 'SonarScanner'
-            withSonarQubeEnv('SonarLocal') {
-                sh '''
-                sonar-scanner \
-                  -Dsonar.projectKey=vin-notes-app \
-                  -Dsonar.sources=src \
-                  -Dsonar.host.url=http://host.docker.internal:9000
-            '''      
-
+    stage('SonarQube Analysis') {
+       steps {
+        withSonarQubeEnv('SonarLocal') {
+            sh 'sonar-scanner -Dsonar.projectKey=vin-notes-app -Dsonar.sources=src -Dsonar.host.url=http://host.docker.internal:9000'
+          }
+      }
+   }
           
-            }
-        }
-    }
 }
 
 

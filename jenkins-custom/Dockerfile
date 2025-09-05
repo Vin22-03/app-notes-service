@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     awscli \
     gnupg software-properties-common
 
-# Install Terraform (1.6.6)
+# Install Terraform (v1.6.6)
 RUN wget https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_linux_amd64.zip && \
     unzip terraform_1.6.6_linux_amd64.zip && \
     mv terraform /usr/local/bin/ && \
@@ -29,8 +29,14 @@ RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/
 # 📦 Install Syft (SBOM generator)
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
-# 👇 This is the KEY PART to fix permission error
-# Re-create docker group with same GID as host, and add jenkins user to it
+# 🚀 Install SonarScanner (v4.8)
+RUN curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip && \
+    unzip sonar-scanner.zip -d /opt && \
+    mv /opt/sonar-scanner-* /opt/sonar-scanner && \
+    ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
+    rm sonar-scanner.zip
+
+# 🛠️ Re-create docker group and add Jenkins to it (to avoid socket permission errors)
 RUN groupmod -g ${DOCKER_GID} docker || true && \
     usermod -aG docker jenkins
 
