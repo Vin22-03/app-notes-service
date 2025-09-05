@@ -94,22 +94,23 @@ pipeline {
     }
 }
 
-stage('Verify ECS Service') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-ecr'  // 👈 Your Jenkins credential ID
-        ]]) {
-            sh '''
-                aws ecs describe-services \
-                  --cluster $ECS_CLUSTER \
-                  --services $ECS_SERVICE \
-                  --region $AWS_REGION
+    stage('Verify ECS Service') {
+          steps {
+              withCredentials([[
+                 $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-ecr'  // 👈 Your Jenkins credential ID
+                      ]]) {
+                         sh '''
+                           aws ecs describe-services \
+                            --cluster $ECS_CLUSTER \
+                            --services $ECS_SERVICE \
+                            --region $AWS_REGION
             '''
-        }
-    }
-}
+         }
+      }
+   }
 
+}
     post {
         success {
             echo '✅ CI/CD pipeline with Blue/Green Deployment completed successfully!'
