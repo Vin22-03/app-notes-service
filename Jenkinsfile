@@ -50,6 +50,18 @@ pipeline {
                 '''
             }
         }
+            
+         stage('SonarQube Scan') {
+    steps {
+        script {
+            def scannerHome = tool 'SonarScanner'
+            withSonarQubeEnv('SonarLocal') {
+                sh "${scannerHome}/bin/sonar-scanner"
+            }
+        }
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
