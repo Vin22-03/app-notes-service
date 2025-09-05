@@ -35,16 +35,11 @@ resource "aws_lb_target_group" "notes_tg_v4" {
     matcher             = "200"
   }
 
-  lifecycle {
-    ignore_changes = [
-      stickiness,
-      deregistration_delay,
-      slow_start,
-      tags_all
-    ]
-    prevent_destroy = true
-    ignore_changes = [tags_all, security_groups]
-  }
+lifecycle {
+  prevent_destroy = false
+  ignore_changes  = [stickiness, deregistration_delay, slow_start, tags_all, security_groups]
+}
+
 
   tags = {
     Name = "notes-tg-v4"
@@ -74,7 +69,7 @@ resource "aws_lb_target_group" "notes_tg_v4_green" {
       slow_start,
       tags_all
     ]
-    prevent_destroy = flase
+    prevent_destroy = false
   }
 
   tags = {
