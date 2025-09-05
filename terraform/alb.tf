@@ -37,7 +37,7 @@ resource "aws_lb_target_group" "notes_tg_v4" {
 
 lifecycle {
   prevent_destroy = false
-  ignore_changes  = [stickiness, deregistration_delay, slow_start, tags_all, security_groups]
+  ignore_changes  = [stickiness, deregistration_delay, slow_start, tags_all ]
 }
 
 
