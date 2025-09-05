@@ -3,5 +3,10 @@ resource "aws_ecs_cluster" "notes_cluster" {
 }
 
 terraform {
-  backend "s3" {}
+  backend "s3" {
+    bucket = "vin-tfstate-bucket"
+    key    = "state.tfstate"
+    region = "us-east-1"
+  }
 }
+
