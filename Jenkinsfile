@@ -74,27 +74,24 @@ pipeline {
             }
         }
 
-        stage('Trigger CodeDeploy Deployment') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-ecr'
-                ]]) {
-                    sh '''
-                        set -ex
-                        aws deploy create-deployment \
-                          --application-name $CODEDEPLOY_APP \
-                          --deployment-group-name $DEPLOYMENT_GROUP \
-                          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-                          --region $AWS_REGION \
-                          --revision revisionType=AppSpecContent,appSpecContent='{
-                          "content": "version: 1\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: vin-notes-task-v4\\n        LoadBalancerInfo:\\n          ContainerName: notes-app-v4\\n          ContainerPort: 8000"
-                          }'
-                                                    
-                    '''
-                }
-            }
+       stage('Trigger CodeDeploy Deployment') {
+           steps {
+               withCredentials([[
+                     $class: 'AmazonWebServicesCredentialsBinding',
+                       credentialsId: 'aws-ecr'
+                  ]]) {
+             sh '''
+                set -ex
+                aws deploy create-deployment \
+                  --application-name notes-app-codedeploy \
+                  --deployment-group-name notes-app-deployment-group \
+                  --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+                  --region $AWS_REGION \
+                  --revision revisionType=AppSpecContent,appSpecContent="{\\"content\\":\\"version: 1\\\\nResources:\\\\n  - TargetService:\\\\n      Type: AWS::ECS::Service\\\\n      Properties:\\\\n        TaskDefinition: vin-notes-task-v4\\\\n        LoadBalancerInfo:\\\\n          ContainerName: notes-app-v4\\\\n          ContainerPort: 8000\\"}"
+            '''
         }
+    }
+}
 
         stage('Verify ECS Service') {
             steps {
