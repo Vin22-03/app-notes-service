@@ -87,7 +87,10 @@ pipeline {
                           --deployment-group-name $DEPLOYMENT_GROUP \
                           --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
                           --region $AWS_REGION \
-                          --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"version: 1\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: $ECS_TASK_DEF\\n        LoadBalancerInfo:\\n          ContainerName: notes-app-v4\\n          ContainerPort: 8000\"}"
+                          --revision revisionType=AppSpecContent,appSpecContent={
+                          "content": "version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: vin-notes-task-v4\n        LoadBalancerInfo:\n          ContainerName: notes-app-v4\n          ContainerPort: 8000"
+                           }'
+                          
                     '''
                 }
             }
