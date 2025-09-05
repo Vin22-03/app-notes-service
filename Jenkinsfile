@@ -81,7 +81,8 @@ pipeline {
                             terraform import -var="image_tag=$IMAGE_TAG" aws_cloudwatch_log_group.notes_logs_v4 /ecs/notes-app-v4 || true
                             terraform import -var="image_tag=$IMAGE_TAG" aws_lb.notes_alb_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:loadbalancer/app/notes-alb-v4/85196f3ad9604335 || true
                             terraform import -var="image_tag=$IMAGE_TAG" aws_lb_target_group.notes_tg_v4 arn:aws:elasticloadbalancing:us-east-1:921483785411:targetgroup/notes-tg-v4/15c1ad03151aa9ad || true
-                        '''
+                            terraform import -var="image_tag=$IMAGE_TAG" aws_ecs_service.notes_service_v4 notes-app-cluster/notes-service-v4 || true
+                            '''
                     }
                 }
             }
