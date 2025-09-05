@@ -84,7 +84,7 @@ pipeline {
                 set -ex
                     aws deploy create-deployment \
                         --application-name vin-notes-codedeploy \
-                        --deployment-group-name notes-app-deployment-group \
+                        --deployment-group-name vin-notes-dg \
                         --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
                         --region us-east-1 \
                         --revision revisionType=AppSpecContent,appSpecContent={content="version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: vin-notes-task-v4\n        LoadBalancerInfo:\n          ContainerName: notes-app-v4\n          ContainerPort: 8000"}
