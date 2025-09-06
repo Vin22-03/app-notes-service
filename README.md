@@ -3,6 +3,31 @@
 > 🚀 A full-stack Flask-based notes app deployed to **AWS ECS Fargate** using a fully automated **CI/CD pipeline** with **DevSecOps**, Infrastructure as Code, Monitoring, and Code Quality integration.
 
 ---
+## 🛠️ My First End-to-End CI/CD DevOps Project
+
+This project is **very special to me** — it's my **first complete CI/CD DevOps pipeline**, built with ❤️ and a LOT of learning.
+
+Over **4–5 days**, I:
+- 📦 Dockerized my Flask app
+- 🧪 Integrated **unit testing**, **code quality scanning** (SonarQube), and **vulnerability analysis** (Trivy, Syft)
+- 🚀 Set up a robust CI/CD flow using **Jenkins**, pushing images to **AWS ECR** and deploying on **ECS Fargate**
+- 📈 Added real-time **monitoring** with **Prometheus** and **Grafana**
+- ☁️ Collected logs with **CloudWatch**, and
+- 📜 Provisioned everything with **Terraform**, even tried **CodeDeploy**!
+
+ 💬 I encountered many real-world DevOps challenges:
+ - Debugging Jenkins permission issues
+ - ECR push errors
+ - ECS deployment loops
+ - Prometheus not scraping metrics
+ - Grafana showing “No data” 😫
+ 
+ …and each bug taught me something valuable.
+
+I didn't just learn tools — I learnt **resilience**, **problem-solving**, and **how DevOps really works in the real world.** 💡
+
+---
+
 
 ## 🧠 Project Overview
 
@@ -19,8 +44,6 @@ This project simulates a **real-world cloud-native deployment workflow** from Gi
 - 📦 SBOM (Software Bill of Materials)
 - 🟢 Blue/Green Deployment via CodeDeploy
 - ✅ ECS Service Verification
-
----
 
 ---
 
@@ -69,14 +92,17 @@ Provisioned using **Terraform** with modular structure and remote state in S3.
 
 ## 📷 Screenshots
 
+### ✅ Final Page
+![Final Page](https://github.com/Vin22-03/app-notes-service/blob/main/Screenshots/Final_page.png)
+
 ### ✅ Jenkins Pipeline View
-![Jenkins Pipeline](./screenshots/pipeline.png)
+![Jenkins Pipeline](https://github.com/Vin22-03/app-notes-service/blob/main/Screenshots/pipeline%20with%20sonarqube.png)
 
 ### ✅ SonarQube Report
-![SonarQube](./screenshots/sonarqube.png)
+![SonarQube](https://github.com/Vin22-03/app-notes-service/blob/main/Screenshots/Sonarqube.png)
 
 ### 📊 Grafana Dashboard
-![Grafana Dashboard](./screenshots/grafana.png)
+![Grafana Dashboard](https://github.com/Vin22-03/app-notes-service/blob/main/Screenshots/grafana_zoom.png)
 
 ---
 
@@ -128,14 +154,11 @@ Security: Trivy + SBOM
 
 Quality: SonarQube
 ```
-👨‍💻 Author
-```
-Vinay Bhajantri (aka VinCloudOps)
-🛠️ From UPSC to Cloud & DevOps Engineer 🚀
-📍 LinkedIn
+## 👨‍💻 Author
 
-📁 Portfolio
-
-📦 GitHub: @Vin22-03
-```
+Vinay Bhajantri
+🛠️ Aspriring Cloud & DevOps Engineer 🚀
+- 📍 [LinkedIn](www.linkedin.com/in/vinayvbhajantri)
+-  📁[Portfolio](www.vincloudops.tech)
+-  📦GitHub: @Vin22-03
 
