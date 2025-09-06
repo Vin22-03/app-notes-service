@@ -53,6 +53,8 @@ pipeline {
             
 stage('SonarQube Analysis') {
     steps {
+        withCredentials([string(credentialsId: 'sonar-tocken', variable: 'SONAR_TOKEN')]) {
+           
         script {
             docker.image('sonarsource/sonar-scanner-cli').inside(
                 "--add-host=host.docker.internal:host-gateway -v ${env.WORKSPACE}:/usr/src"
@@ -61,14 +63,15 @@ stage('SonarQube Analysis') {
                     sonar-scanner \
                       -Dsonar.projectKey=vin-notes-app \
                       -Dsonar.sources=src \
-                      -Dsonar.host.url=http://host.docker.internal:9000
+                      -Dsonar.host.url=http://host.docker.internal:9000 \
+                      -Dsonar.token=$SONAR_TOKEN
                 '''
             }
         }
     }
 }
 
-
+}
         stage('Build Docker Image') {
             steps {
                 sh '''
