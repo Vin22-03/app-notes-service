@@ -58,7 +58,7 @@ pipeline {
     "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
     "PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:${env.PATH}"
   ]) {
-            sh 'sonar-scanner -Dsonar.projectKey=vin-notes-app -Dsonar.sources=src -Dsonar.host.url=http://host.docker.internal:9000'
+            sh 'sonar-scanner -X -Dsonar.projectKey=vin-notes-app -Dsonar.sources=src -Dsonar.host.url=http://host.docker.internal:9000'
           }
       }
    }
