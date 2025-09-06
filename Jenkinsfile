@@ -51,19 +51,23 @@ pipeline {
             }
         }
             
-    stage('SonarQube Analysis') {
-       steps {
-        withSonarQubeEnv('SonarLocal') {
-            withEnv([
-    "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
-    "PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:${env.PATH}"
-  ]) {
-            sh 'sonar-scanner -X -Dsonar.projectKey=vin-notes-app -Dsonar.sources=src -Dsonar.host.url=http://host.docker.internal:9000'
-          }
-      }
-   }
-
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            docker.image('sonarsource/sonar-scanner-cli').inside(
+                "--add-host=host.docker.internal:host-gateway -v ${env.WORKSPACE}:/usr/src"
+            ) {
+                sh '''
+                    sonar-scanner \
+                      -Dsonar.projectKey=vin-notes-app \
+                      -Dsonar.sources=src \
+                      -Dsonar.host.url=http://host.docker.internal:9000
+                '''
+            }
+        }
+    }
 }
+
 
         stage('Build Docker Image') {
             steps {
